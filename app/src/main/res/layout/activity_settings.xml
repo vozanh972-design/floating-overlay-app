@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Độ trong suốt -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_opacity"
+            android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderOpacity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="30"
+            android:valueTo="100"
+            android:stepSize="5" />
+
+        <!-- Kích thước nút -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/settings_button_size"
+            android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+        <com.google.android.material.slider.Slider
+            android:id="@+id/sliderSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:valueFrom="40"
+            android:valueTo="80"
+            android:stepSize="4" />
+
+        <!-- Rung -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchVibration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/settings_vibration" />
+
+        <!-- Tự khởi động -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switchAutoStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/settings_auto_start" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
