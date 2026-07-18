@@ -1,73 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Quyền vẽ overlay trên các app khác -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-
-    <!-- Cần cho Foreground Service loại "specialUse" (Android 14+ bắt buộc khai loại rõ ràng) -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-
-    <!-- Hiển thị notification cho Foreground Service (bắt buộc từ Android 13 - API 33) -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <!-- Cho phép service tự khởi động lại sau khi khởi động máy (tuỳ chọn) -->
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".OverlayApplication"
+        android:name=".CayXuApp"
         android:allowBackup="false"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.FloatingOverlay"
-        tools:targetApi="35">
+        android:theme="@style/Theme.CayXu"
+        android:networkSecurityConfig="@xml/network_security_config">
 
-        <!-- Activity chính: xin quyền + bật/tắt service -->
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.FloatingOverlay">
+            android:theme="@style/Theme.CayXu"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Activity Settings (mở từ panel nổi) -->
-        <activity
-            android:name=".ui.SettingsActivity"
-            android:exported="false"
-            android:label="@string/settings_title"
-            android:theme="@style/Theme.FloatingOverlay" />
-
-        <!-- Accessibility Service: bắt buộc khai báo meta-data trỏ tới accessibility_service_config.xml -->
-        <service
-            android:name=".service.AppAccessibilityService"
-            android:exported="true"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/accessibility_service_config" />
-        </service>
-
-        <!-- Foreground Service quản lý vòng đời overlay (tách khỏi Accessibility Service để dễ kiểm soát Start/Stop) -->
-        <service
-            android:name=".service.OverlayForegroundService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="floating_overlay_control_panel" />
-        </service>
-
     </application>
-
 </manifest>

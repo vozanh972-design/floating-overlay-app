@@ -12,6 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-
-rootProject.name = "FloatingOverlayApp"
+rootProject.name = "CayXu"
 include(":app")

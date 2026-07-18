@@ -4,20 +4,41 @@ plugins {
 }
 
 android {
-    namespace = "com.example.floatingoverlay"
-    // compileSdk 35 = Android 15
+    namespace = "com.cayxu.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.floatingoverlay"
-        // minSdk 29 = Android 10 (yêu cầu tối thiểu của đề bài)
-        minSdk = 29
-        // targetSdk 35 = Android 15 (mới nhất)
+        applicationId = "com.cayxu.app"
+        // Android 7.0 (Nougat) trở lên
+        minSdk = 24
+        // targetSdk sẽ được nâng lên khi Android 16 SDK chính thức phát hành
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+    }
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    // Chỉ tạo signingConfig "release" khi có đủ thông tin keystore
+    // (lấy từ biến môi trường khi build trên GitHub Actions, hoặc từ
+    // local.properties khi build tay trên máy). Nếu thiếu, APK release
+    // vẫn build được nhưng sẽ ký bằng debug key (không dùng để phát hành).
+    val keystorePath = System.getenv("KEYSTORE_FILE") ?: "release.keystore"
+    val keystorePassword = System.getenv("KEYSTORE_PASSWORD")
+    val keyAliasEnv = System.getenv("KEY_ALIAS")
+    val keyPasswordEnv = System.getenv("KEY_PASSWORD")
+    val hasReleaseSigning = file(keystorePath).exists() &&
+        !keystorePassword.isNullOrBlank() &&
+        !keyAliasEnv.isNullOrBlank() &&
+        !keyPasswordEnv.isNullOrBlank()
+
+    if (hasReleaseSigning) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = keystorePassword
+                keyAlias = keyAliasEnv
+                keyPassword = keyPasswordEnv
+            }
+        }
     }
 
     buildTypes {
@@ -27,6 +48,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
         debug {
             isMinifyEnabled = false
@@ -37,13 +61,16 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = "17"
     }
 
     buildFeatures {
-        viewBinding = true
+        compose = true
+        buildConfig = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     packaging {
@@ -54,33 +81,38 @@ android {
 }
 
 dependencies {
-    // Core + Kotlin
+    // Core / Compose
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-
-    // Material Design 3
-    implementation("com.google.android.material:material:1.12.0")
-
-    // Lifecycle / ViewModel / LiveData (MVVM)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
-    implementation("androidx.lifecycle:lifecycle-service:2.8.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+    implementation("androidx.activity:activity-compose:1.9.1")
+
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Networking
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Secure local storage cho key đăng nhập
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
-    // DataStore (thay SharedPreferences để lưu Settings - khuyến nghị hiện đại)
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    // WorkManager: dùng để lên lịch tự động gọi lại verify_key.php định kỳ
+    // (ngẫu nhiên 3-10 tiếng/lần), phát hiện key bị thu hồi/hết hạn ngay cả khi
+    // app đã bị patch để bypass màn Login lúc mở app.
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
-    // ConstraintLayout cho layout overlay
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-
-    // CardView cho panel điều khiển nổi
-    implementation("androidx.cardview:cardview:1.0.0")
-
-    // Testing
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    debugImplementation("androidx.compose.ui:ui-tooling")
 }
