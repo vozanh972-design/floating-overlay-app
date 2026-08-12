@@ -1,7 +1,7 @@
 {
   "name": "adb-connect-ldplayer-tool",
   "version": "1.0.0",
-  "builtin-baseline": "master",
+  "builtin-baseline": "6224e10f5a201e0d575d2c63dd8455786389dd2d",
   "dependencies": [
     {
       "name": "imgui",

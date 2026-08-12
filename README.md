@@ -93,12 +93,12 @@ git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
 C:\vcpkg\bootstrap-vcpkg.bat
 
 cd ldplayer_adb_tool_cpp
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 ^
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release ^
       -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
-cmake --build build --config Release
+cmake --build build --parallel
 ```
 
-File thực thi: `build\Release\ADBConnectLDPlayerTool.exe`.
+File thực thi: `build\bin\ADBConnectLDPlayerTool.exe`.
 
 ## 5. Kết nối LDPlayer
 
