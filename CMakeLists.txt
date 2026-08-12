@@ -30,6 +30,7 @@ target_link_libraries(ADBConnectLDPlayerTool PRIVATE
     dwrite.lib
     Shcore.lib
     comdlg32.lib
+    shell32.lib
 )
 
 target_compile_definitions(ADBConnectLDPlayerTool PRIVATE

@@ -31,8 +31,13 @@ public:
     ProcessResult Disconnect(const std::string& address = ""); // `adb disconnect [addr]`
 
     // --- Shell / info --------------------------------------------------------
-    ProcessResult Shell(const std::string& serial, const std::vector<std::wstring>& shellArgs, unsigned long timeoutMs = 15000);
-    std::string   GetProp(const std::string& serial, const std::string& prop);
+    // Note: named RunShell / GetDeviceProp (not Shell / GetProp) to avoid
+    // colliding with Win32's GetProp macro (winuser.h -> GetPropW under
+    // UNICODE) and the COM "Shell" type declared in <shldisp.h> (pulled in
+    // transitively via <shlobj.h>), both of which caused real MSVC build
+    // failures when this file used the shorter names.
+    ProcessResult RunShell(const std::string& serial, const std::vector<std::wstring>& shellArgs, unsigned long timeoutMs = 15000);
+    std::string   GetDeviceProp(const std::string& serial, const std::string& prop);
     void          LoadExtendedInfo(Device& device);    // model, android ver, resolution, battery, cpu, ram...
 
     // --- Package management -------------------------------------------------

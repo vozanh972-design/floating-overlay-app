@@ -81,6 +81,7 @@ void RenderDevices(App& app) {
 }
 
 void RenderControl(App& app) {
+    (void)app;
     PlaceholderCard("Điều khiển thiết bị", "Điều khiển màn hình trực tiếp (mirror + input) đang được phát triển.",
                      Icons::Type::Gamepad);
 }
@@ -153,6 +154,7 @@ void RenderApps(App& app) {
 }
 
 void RenderFiles(App& app) {
+    (void)app;
     PlaceholderCard("Quản lý tập tin", "Trình duyệt file hai chiều (push/pull) đang được phát triển.",
                      Icons::Type::Folder);
 }
@@ -262,6 +264,7 @@ void RenderSettings(App& app) {
 }
 
 void RenderAbout(App& app) {
+    (void)app;
     PlaceholderCard("ADB Connect - LDPlayer Tool", "Phiên bản 1.0.0 - Ứng dụng C++ native (Win32 + Direct3D11 + Dear ImGui).",
                      Icons::Type::Info);
 }

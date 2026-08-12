@@ -1,6 +1,7 @@
 #include "adb_manager.h"
 #include <windows.h>
 #include <shlobj.h>
+#include <shellapi.h>   // CommandLineToArgvW
 #include <sstream>
 #include <regex>
 #include <algorithm>
@@ -161,14 +162,14 @@ ProcessResult AdbManager::Disconnect(const std::string& address) {
     return Run({ L"disconnect", Utf8ToWide(address) });
 }
 
-ProcessResult AdbManager::Shell(const std::string& serial, const std::vector<std::wstring>& shellArgs, unsigned long timeoutMs) {
+ProcessResult AdbManager::RunShell(const std::string& serial, const std::vector<std::wstring>& shellArgs, unsigned long timeoutMs) {
     std::vector<std::wstring> args = WithSerial(serial, { L"shell" });
     for (auto& a : shellArgs) args.push_back(a);
     return Run(args, timeoutMs);
 }
 
-std::string AdbManager::GetProp(const std::string& serial, const std::string& prop) {
-    auto r = Shell(serial, { L"getprop", Utf8ToWide(prop) });
+std::string AdbManager::GetDeviceProp(const std::string& serial, const std::string& prop) {
+    auto r = RunShell(serial, { L"getprop", Utf8ToWide(prop) });
     if (!r.Success()) return {};
     std::string out = r.stdOut;
     while (!out.empty() && (out.back() == '\n' || out.back() == '\r')) out.pop_back();
@@ -182,21 +183,21 @@ static std::string ExtractRegex(const std::string& text, const std::regex& re) {
 }
 
 void AdbManager::LoadExtendedInfo(Device& device) {
-    device.manufacturer   = GetProp(device.serial, "ro.product.manufacturer");
-    device.model           = GetProp(device.serial, "ro.product.model");
-    device.androidVersion  = GetProp(device.serial, "ro.build.version.release");
-    device.abi              = GetProp(device.serial, "ro.product.cpu.abi");
+    device.manufacturer   = GetDeviceProp(device.serial, "ro.product.manufacturer");
+    device.model           = GetDeviceProp(device.serial, "ro.product.model");
+    device.androidVersion  = GetDeviceProp(device.serial, "ro.build.version.release");
+    device.abi              = GetDeviceProp(device.serial, "ro.product.cpu.abi");
 
-    auto wmSize = Shell(device.serial, { L"wm", L"size" });
+    auto wmSize = RunShell(device.serial, { L"wm", L"size" });
     if (wmSize.Success()) {
         device.resolution = ExtractRegex(wmSize.stdOut, std::regex(R"((\d+x\d+))"));
     }
-    auto wmDensity = Shell(device.serial, { L"wm", L"density" });
+    auto wmDensity = RunShell(device.serial, { L"wm", L"density" });
     if (wmDensity.Success()) {
         device.dpi = ExtractRegex(wmDensity.stdOut, std::regex(R"((\d+))"));
     }
 
-    auto battery = Shell(device.serial, { L"dumpsys", L"battery" });
+    auto battery = RunShell(device.serial, { L"dumpsys", L"battery" });
     if (battery.Success()) {
         std::string level = ExtractRegex(battery.stdOut, std::regex(R"(level:\s*(\d+))"));
         std::string charging = battery.stdOut.find("status: 2") != std::string::npos ? "Đang sạc" : "";
@@ -205,7 +206,7 @@ void AdbManager::LoadExtendedInfo(Device& device) {
         }
     }
 
-    auto meminfo = Shell(device.serial, { L"cat", L"/proc/meminfo" });
+    auto meminfo = RunShell(device.serial, { L"cat", L"/proc/meminfo" });
     if (meminfo.Success()) {
         std::string kb = ExtractRegex(meminfo.stdOut, std::regex(R"(MemTotal:\s*(\d+))"));
         if (!kb.empty()) {
@@ -216,7 +217,7 @@ void AdbManager::LoadExtendedInfo(Device& device) {
         }
     }
 
-    auto df = Shell(device.serial, { L"df", L"/data" });
+    auto df = RunShell(device.serial, { L"df", L"/data" });
     if (df.Success()) {
         std::istringstream stream(df.stdOut);
         std::string headerLine, dataLine;
@@ -233,7 +234,7 @@ void AdbManager::LoadExtendedInfo(Device& device) {
         }
     }
 
-    auto suCheck = Shell(device.serial, { L"which", L"su" });
+    auto suCheck = RunShell(device.serial, { L"which", L"su" });
     device.isRooted = suCheck.Success() && !suCheck.stdOut.empty();
 
     device.infoLoaded = true;
@@ -251,7 +252,7 @@ ProcessResult AdbManager::UninstallPackage(const std::string& serial, const std:
 }
 
 ProcessResult AdbManager::ListPackages(const std::string& serial) {
-    return Shell(serial, { L"pm", L"list", L"packages" }, 20000);
+    return RunShell(serial, { L"pm", L"list", L"packages" }, 20000);
 }
 
 ProcessResult AdbManager::Push(const std::string& serial, const std::wstring& localPath, const std::string& remotePath) {
@@ -264,10 +265,10 @@ ProcessResult AdbManager::Pull(const std::string& serial, const std::string& rem
 
 ProcessResult AdbManager::CaptureScreenshot(const std::string& serial, const std::wstring& localSavePath) {
     const std::wstring remoteTmp = L"/sdcard/_adbconnect_screenshot.png";
-    auto cap = Shell(serial, { L"screencap", L"-p", remoteTmp }, 20000);
+    auto cap = RunShell(serial, { L"screencap", L"-p", remoteTmp }, 20000);
     if (!cap.Success()) return cap;
     auto pull = Pull(serial, WideToUtf8Str(remoteTmp), localSavePath);
-    Shell(serial, { L"rm", L"-f", remoteTmp }, 10000);
+    RunShell(serial, { L"rm", L"-f", remoteTmp }, 10000);
     return pull;
 }
 
@@ -277,7 +278,7 @@ ProcessResult AdbManager::Reboot(const std::string& serial) {
 
 ProcessResult AdbManager::ShellSimple(const std::string& serial, const std::string& shellCommandLine) {
     auto tokens = SplitArgsW(shellCommandLine);
-    return Shell(serial, tokens);
+    return RunShell(serial, tokens);
 }
 
 ProcessResult AdbManager::RunConsoleCommand(const std::string& serial, const std::vector<std::wstring>& adbArgs) {

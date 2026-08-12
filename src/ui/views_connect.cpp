@@ -12,9 +12,9 @@ namespace Views {
 static std::string FormatElapsed(std::chrono::steady_clock::time_point since) {
     if (since.time_since_epoch().count() == 0) return "--:--:--";
     auto secs = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - since).count();
-    long h = secs / 3600, m = (secs % 3600) / 60, s = secs % 60;
+    long long h = secs / 3600, m = (secs % 3600) / 60, s = secs % 60;
     char buf[16];
-    snprintf(buf, sizeof(buf), "%02ld:%02ld:%02ld", h, m, s);
+    snprintf(buf, sizeof(buf), "%02lld:%02lld:%02lld", h, m, s);
     return buf;
 }
 
