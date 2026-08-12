@@ -26,23 +26,24 @@ jobs:
           C:\vcpkg\bootstrap-vcpkg.bat
         shell: cmd
 
-      - name: Configure (CMake + vcpkg toolchain)
+      - name: Configure (CMake + vcpkg toolchain, Ninja generator)
         run: >
           cmake -S . -B build
-          -G "Visual Studio 17 2022" -A x64
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
         shell: cmd
 
       # This is the real build step: MSVC (cl.exe/link.exe) compiles every
       # .cpp in src/ straight to machine code and links a native PE .exe.
-      - name: Build (Release, native MSVC compile)
-        run: cmake --build build --config Release --parallel
+      - name: Build (Release, native MSVC compile via Ninja)
+        run: cmake --build build --parallel
         shell: cmd
 
       - name: Locate built exe
         id: locate
         run: |
-          echo "path=build/Release/ADBConnectLDPlayerTool.exe" >> $env:GITHUB_OUTPUT
+          echo "path=build/bin/ADBConnectLDPlayerTool.exe" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
       - name: Upload built exe as workflow artifact
